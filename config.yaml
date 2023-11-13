@@ -1,0 +1,15 @@
+docker:
+  #
+  # network_id | network_subnet | network_gatewas (required)
+  # network configuration for the bridge networks used by the system agent
+  #
+  network_id: isha-net
+  network_subnet: 172.100.100.0/24
+  network_gateway: 172.100.100.1
+
+mqtt:
+  broker: tcp://127.0.0.1:1883
+  client_id: docker
+  username: my-username
+  password: my-password
+  app_name: mqtt-docker-sdk
