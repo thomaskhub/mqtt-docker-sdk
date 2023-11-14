@@ -7,6 +7,7 @@ import (
 	"log"
 	"os"
 	"os/exec"
+	"time"
 
 	mqtt "github.com/eclipse/paho.mqtt.golang"
 	"github.com/thomaskhub/mqtt-docker-sdk/client"
@@ -35,9 +36,14 @@ func main() {
 		log.Fatal("Git command is not installed on the server")
 	}
 
+	// hostinfo, err := utils.ConvertHostInfoToJson()
+	hostinfo, err := utils.GetHostInfoAsMap()
+	if err != nil {
+		logger.Fatal("could not convert hostinfo to json", zap.Error(err))
+	}
+
 	cfg := utils.ParseConfig(*configFile)
-	cfg.PubTopic = `from/` + cfg.Mqtt.AppName
-	cfg.SubTopic = `to/` + cfg.Mqtt.AppName
+	cfg.Mqtt.BrokerSubscribeTopic = cfg.AppName + "/" + hostinfo["instance_id"].(string)
 
 	err = dockerClient.Init(
 		cfg.Docker.NetworkId,
@@ -90,11 +96,26 @@ func main() {
 		resp := r.HandleRpcCall(&rpcReq)
 		respString, _ := json.Marshal(resp)
 		if resp != nil {
-			client.Publish(cfg.PubTopic, respString, 2)
+			client.Publish(cfg.Mqtt.BrokerPublishTopic, respString, 2)
 		}
 	}
 
-	client.Subscribe(cfg.SubTopic, rxMsg, 2)
+	client.Subscribe(cfg.Mqtt.BrokerSubscribeTopic, rxMsg, 2)
+
+	//
+	// Heartbeat
+	//
+	//read /etc/linux-hostinfo/hostinfo.yaml and convert it to a json string
+
+	go func() {
+		//send hostinfo every 30 seconds
+		ticker := time.NewTicker(time.Duration(cfg.Mqtt.HeartBeatInterval) * time.Second)
+
+		for {
+			<-ticker.C
+			client.Publish(cfg.Mqtt.BrokerPublishTopic, hostinfo, 2)
+		}
+	}()
 
 	select {}
 }

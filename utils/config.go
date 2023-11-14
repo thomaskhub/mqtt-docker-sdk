@@ -9,11 +9,14 @@ import (
 )
 
 type Mqtt struct {
-	Broker   string `yaml:"broker"`    //url of the remote broker
-	ClientId string `yaml:"client_id"` //client id to connect to remote broker
-	Username string `yaml:"username"`  //username to connect to remote broker
-	Password string `yaml:"password"`  //password to connect to remote broker
-	AppName  string `yaml:"app_name"`
+	Broker               string `yaml:"broker"`    //url of the remote broker
+	ClientId             string `yaml:"client_id"` //client id to connect to remote broker
+	Username             string `yaml:"username"`  //username to connect to remote broker
+	Password             string `yaml:"password"`  //password to connect to remote broker
+	EnableHeartbeat      bool   `yaml:"enable_heartbeat"`
+	HeartBeatInterval    int    `yaml:"heartbeat_interval"`
+	BrokerPublishTopic   string `yaml:"broker_publish_topic"`
+	BrokerSubscribeTopic string `yaml:"broker_subscribe_topic"`
 }
 
 type Docker struct {
@@ -23,10 +26,9 @@ type Docker struct {
 	NetworkGateway string `yaml:"network_gateway"`
 }
 type Config struct {
-	Docker   Docker `yaml:"docker"`
-	Mqtt     Mqtt   `yaml:"mqtt"`
-	SubTopic string
-	PubTopic string
+	Docker  Docker `yaml:"docker"`
+	Mqtt    Mqtt   `yaml:"mqtt"`
+	AppName string `yaml:"app_name"`
 }
 
 func ParseConfig(file string) *Config {

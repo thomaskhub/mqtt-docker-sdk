@@ -1,3 +1,4 @@
+app_name: my-app
 docker:
   #
   # network_id | network_subnet | network_gatewas (required)
@@ -12,4 +13,6 @@ mqtt:
   client_id: docker
   username: my-username
   password: my-password
-  app_name: mqtt-docker-sdk
+  broker_publish_topic: my-app/cmd
+  enable_heartbeat: true
+  heartbeat_interval: 20
