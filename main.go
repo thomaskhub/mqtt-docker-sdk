@@ -44,6 +44,7 @@ func main() {
 
 	cfg := utils.ParseConfig(*configFile)
 	cfg.Mqtt.BrokerSubscribeTopic = cfg.AppName + "/" + hostinfo["instance_id"].(string)
+	cfg.Mqtt.BrokerPublishTopic = cfg.AppName + "/cmd/" + hostinfo["instance_id"].(string)
 
 	err = dockerClient.Init(
 		cfg.Docker.NetworkId,
@@ -69,7 +70,7 @@ func main() {
 	//docker is now ready to be called via mqtt
 	client := client.NewMqttClientWithConfig(
 		cfg.Mqtt.Broker,
-		cfg.Mqtt.ClientId,
+		hostinfo["instance_id"].(string), //client id
 		cfg.Mqtt.Username,
 		cfg.Mqtt.Password,
 	)
@@ -102,11 +103,7 @@ func main() {
 
 	client.Subscribe(cfg.Mqtt.BrokerSubscribeTopic, rxMsg, 2)
 
-	//
 	// Heartbeat
-	//
-	//read /etc/linux-hostinfo/hostinfo.yaml and convert it to a json string
-
 	go func() {
 		//send hostinfo every 30 seconds
 		ticker := time.NewTicker(time.Duration(cfg.Mqtt.HeartBeatInterval) * time.Second)

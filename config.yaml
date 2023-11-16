@@ -10,9 +10,7 @@ docker:
 
 mqtt:
   broker: tcp://127.0.0.1:1883
-  client_id: docker
   username: my-username
   password: my-password
-  broker_publish_topic: my-app/cmd
   enable_heartbeat: true
   heartbeat_interval: 20
