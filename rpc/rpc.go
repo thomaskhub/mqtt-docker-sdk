@@ -8,6 +8,18 @@ import (
 )
 
 const (
+	CONTAINER_START  = "start"
+	CONTAINER_CREATE = "create"
+	CONTAINER_DIE    = "die"
+)
+
+var EventMapping = map[string]string{
+	CONTAINER_START:  "docker_event_start",
+	CONTAINER_CREATE: "docker_event_create",
+	CONTAINER_DIE:    "docker_event_die",
+}
+
+const (
 	RPC_METHOD_START_DOCKER = "start_docker"
 	RPC_METHOD_ERROR_DOCKER = "error_docker"
 	RPC_METHOD_STOP_DOCKER  = "stop_docker"
@@ -41,6 +53,13 @@ type RpcResp struct {
 	Error   *RpcErr     `json:"error,omitempty"`
 }
 
+type RpcResp2 struct {
+	Jsonrpc string      `json:"jsonrpc"`
+	Id      int         `json:"id"`
+	Method  string      `json:"method"`
+	Result  interface{} `json:"result,omitempty"`
+}
+
 type RpcStartDockerParams struct {
 	ImageName     string `json:"imageName"`
 	ContainerName string `json:"containerName"`
@@ -66,6 +85,12 @@ type Rpc struct {
 	logger     utils.Logger
 	// dockerImgWhiteList []string
 	dockerClient *docker.Docker
+}
+
+type EventsDockerResult struct {
+	ContainerId string `json:"containerId"`
+	Name        string `json:"name"`
+	Image       string `json:"image"`
 }
 
 // func (r *Rpc) Init(loggerMode string, dockerImgWhiteList []string, dockerClient *docker.Docker) {

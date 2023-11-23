@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"sync"
 
+	"github.com/thomaskhub/mqtt-docker-sdk/docker"
 	"go.uber.org/zap"
 )
 
@@ -111,4 +112,38 @@ func (r *Rpc) HandleStartDocker(req *RpcReq) *RpcResp {
 			Warnings:    warnings,
 		},
 	}
+}
+
+func (r *Rpc) HandleEventDocker(resp chan *RpcResp2) *RpcResp2 {
+	event := make(chan docker.ContainerEventData)
+	go r.dockerClient.ContainerEvents(event)
+
+	// if err != nil {
+	// 	return &RpcResp{
+	// 		Id:      req.Id,
+	// 		Jsonrpc: "2.0",
+	// 		Error: &RpcErr{
+	// 			Code:  RCP_ERR_CODE_INTERNAL_ERROR,
+	// 			Error: err.Error(),
+	// 		},
+	// 	}
+	// }
+
+	go func() {
+		for {
+			lastContainerEventData := <-event
+
+			resp <- &RpcResp2{
+				Id:      12,
+				Jsonrpc: "2.0",
+				Method:  EventMapping[lastContainerEventData.Status],
+				Result: EventsDockerResult{
+					ContainerId: lastContainerEventData.ID,
+					Image:       lastContainerEventData.Image,
+					Name:        lastContainerEventData.Name,
+				},
+			}
+		}
+	}()
+	return nil
 }

@@ -71,6 +71,7 @@ func main() {
 	client := client.NewMqttClientWithConfig(
 		cfg.Mqtt.Broker,
 		hostinfo["instance_id"].(string), //client id
+
 		cfg.Mqtt.Username,
 		cfg.Mqtt.Password,
 	)
@@ -102,6 +103,18 @@ func main() {
 	}
 
 	client.Subscribe(cfg.Mqtt.BrokerSubscribeTopic, rxMsg, 2)
+
+	eventsChannel := make(chan *rpc.RpcResp2)
+	r.HandleEventDocker(eventsChannel)
+	go func() {
+		for {
+			select {
+			case event := <-eventsChannel:
+				jsonData, _ := json.Marshal(event)
+				client.Publish(cfg.Mqtt.BrokerPublishTopic, jsonData, 2)
+			}
+		}
+	}()
 
 	// Heartbeat
 	go func() {
