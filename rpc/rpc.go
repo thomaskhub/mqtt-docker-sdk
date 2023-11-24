@@ -91,6 +91,8 @@ type EventsDockerResult struct {
 	ContainerId string `json:"containerId"`
 	Name        string `json:"name"`
 	Image       string `json:"image"`
+	Status      string `json:"status"`
+	ExitCode    string `json:"exitCode,omitempty"`
 }
 
 // func (r *Rpc) Init(loggerMode string, dockerImgWhiteList []string, dockerClient *docker.Docker) {

@@ -141,6 +141,8 @@ func (r *Rpc) HandleEventDocker(resp chan *RpcResp2) *RpcResp2 {
 					ContainerId: lastContainerEventData.ID,
 					Image:       lastContainerEventData.Image,
 					Name:        lastContainerEventData.Name,
+					Status:      lastContainerEventData.Status,
+					ExitCode:    lastContainerEventData.ExitCode,
 				},
 			}
 		}

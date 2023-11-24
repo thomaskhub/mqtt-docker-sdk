@@ -25,10 +25,11 @@ type Docker struct {
 }
 
 type ContainerEventData struct {
-	ID     string
-	Name   string
-	Image  string
-	Status string
+	ID       string
+	Name     string
+	Image    string
+	Status   string
+	ExitCode string
 }
 
 func (d *Docker) Init(networkId, networkSubnet string, networkGateway string) error {
@@ -237,13 +238,15 @@ func (d *Docker) ContainerEvents(eve chan<- ContainerEventData) ContainerEventDa
 			switch event.Action {
 
 			case "create":
-				fmt.Printf("Container %s created\n", event.Actor.ID)
+				// fmt.Printf("Container %s created\n", event.Actor.ID)
 				eve <- handleContainerEvent(event)
+
 			case "die":
-				fmt.Printf("Container %s died\n", event.Actor.ID)
+				// fmt.Printf("Container %s died\n", event.Actor.ID)
 				eve <- handleContainerEvent(event)
+
 			case "start":
-				fmt.Printf("Container %s started\n", event.Actor.ID)
+				// fmt.Printf("Container %s started\n", event.Actor.ID)
 				eve <- handleContainerEvent(event)
 			}
 		case err := <-errChan:
@@ -255,9 +258,10 @@ func (d *Docker) ContainerEvents(eve chan<- ContainerEventData) ContainerEventDa
 
 func handleContainerEvent(event events.Message) ContainerEventData {
 	return ContainerEventData{
-		ID:     event.Actor.ID,
-		Name:   event.Actor.Attributes["name"],
-		Image:  event.Actor.Attributes["image"],
-		Status: event.Status,
+		ID:       event.Actor.ID,
+		Name:     event.Actor.Attributes["name"],
+		Image:    event.Actor.Attributes["image"],
+		Status:   event.Status,
+		ExitCode: event.Actor.Attributes["exitCode"],
 	}
 }
