@@ -114,7 +114,7 @@ func (r *Rpc) HandleStartDocker(req *RpcReq) *RpcResp {
 	}
 }
 
-func (r *Rpc) HandleEventDocker(resp chan *RpcResp2) *RpcResp2 {
+func (r *Rpc) HandleEventDocker(resp chan *RpcReq) *RpcReq {
 	event := make(chan docker.ContainerEventData)
 	go r.dockerClient.ContainerEvents(event)
 
@@ -133,11 +133,11 @@ func (r *Rpc) HandleEventDocker(resp chan *RpcResp2) *RpcResp2 {
 		for {
 			lastContainerEventData := <-event
 
-			resp <- &RpcResp2{
-				Id:      12,
+			resp <- &RpcReq{
+				Id:      0,
 				Jsonrpc: "2.0",
 				Method:  EventMapping[lastContainerEventData.Status],
-				Result: EventsDockerResult{
+				Params: EventsDockerResult{
 					ContainerId: lastContainerEventData.ID,
 					Image:       lastContainerEventData.Image,
 					Name:        lastContainerEventData.Name,

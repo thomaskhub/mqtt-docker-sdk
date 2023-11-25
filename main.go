@@ -37,14 +37,14 @@ func main() {
 	}
 
 	// hostinfo, err := utils.ConvertHostInfoToJson()
-	hostinfo, err := utils.GetHostInfoAsMap()
+	hostinfoByte, hostinfoMap, err := utils.GetHostInfoByteAndMap()
 	if err != nil {
 		logger.Fatal("could not convert hostinfo to json", zap.Error(err))
 	}
 
 	cfg := utils.ParseConfig(*configFile)
-	cfg.Mqtt.BrokerSubscribeTopic = cfg.AppName + "/" + hostinfo["instance_id"].(string)
-	cfg.Mqtt.BrokerPublishTopic = cfg.AppName + "/cmd/" + hostinfo["instance_id"].(string)
+	cfg.Mqtt.BrokerSubscribeTopic = cfg.AppName + "/" + hostinfoMap["instance_id"].(string)
+	cfg.Mqtt.BrokerPublishTopic = cfg.AppName + "/cmd/" + hostinfoMap["instance_id"].(string)
 
 	err = dockerClient.Init(
 		cfg.Docker.NetworkId,
@@ -70,7 +70,7 @@ func main() {
 	//docker is now ready to be called via mqtt
 	client := client.NewMqttClientWithConfig(
 		cfg.Mqtt.Broker,
-		hostinfo["instance_id"].(string), //client id
+		hostinfoMap["instance_id"].(string), //client id
 
 		cfg.Mqtt.Username,
 		cfg.Mqtt.Password,
@@ -104,7 +104,7 @@ func main() {
 
 	client.Subscribe(cfg.Mqtt.BrokerSubscribeTopic, rxMsg, 2)
 
-	eventsChannel := make(chan *rpc.RpcResp2)
+	eventsChannel := make(chan *rpc.RpcReq)
 	r.HandleEventDocker(eventsChannel)
 	go func() {
 		for {
@@ -123,7 +123,7 @@ func main() {
 
 		for {
 			<-ticker.C
-			client.Publish(cfg.Mqtt.BrokerPublishTopic, hostinfo, 2)
+			client.Publish(cfg.Mqtt.BrokerPublishTopic, hostinfoByte, 2)
 		}
 	}()
 

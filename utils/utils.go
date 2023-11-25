@@ -47,14 +47,14 @@ func YamlToJson(data []byte) ([]byte, error) {
 	return jsonData, nil
 }
 
-func GetHostInfoAsMap() (map[string]interface{}, error) {
+func GetHostInfoByteAndMap() ([]byte, map[string]interface{}, error) {
 	filePath := "/etc/linux-hostinfo/hostinfo.yaml"
 
 	// Read the hostinfo.yaml file
 	data, err := os.ReadFile(filePath)
 	if err != nil {
 		log.Fatalf("error: %v", err)
-		return nil, err
+		return nil, nil, err
 	}
 
 	m := make(map[string]interface{})
@@ -63,8 +63,8 @@ func GetHostInfoAsMap() (map[string]interface{}, error) {
 	err = yaml.Unmarshal(data, &m)
 	if err != nil {
 		log.Fatalf("error: %v", err)
-		return nil, err
+		return nil, nil, err
 	}
 
-	return m, nil
+	return data, m, nil
 }

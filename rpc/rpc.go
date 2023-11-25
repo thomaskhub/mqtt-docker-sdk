@@ -53,13 +53,6 @@ type RpcResp struct {
 	Error   *RpcErr     `json:"error,omitempty"`
 }
 
-type RpcResp2 struct {
-	Jsonrpc string      `json:"jsonrpc"`
-	Id      int         `json:"id"`
-	Method  string      `json:"method"`
-	Result  interface{} `json:"result,omitempty"`
-}
-
 type RpcStartDockerParams struct {
 	ImageName     string `json:"imageName"`
 	ContainerName string `json:"containerName"`
