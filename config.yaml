@@ -1,4 +1,4 @@
-app_name: my-app
+app_name: media-engine
 docker:
   #
   # network_id | network_subnet | network_gatewas (required)

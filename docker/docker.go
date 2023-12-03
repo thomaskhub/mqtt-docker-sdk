@@ -3,10 +3,13 @@ package docker
 import (
 	"context"
 	"fmt"
+	"log"
 	"strings"
 
 	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/api/types/container"
+	"github.com/docker/docker/api/types/events"
+	"github.com/docker/docker/api/types/filters"
 	"github.com/docker/docker/api/types/mount"
 	"github.com/docker/docker/api/types/network"
 	sdkClient "github.com/docker/docker/client"
@@ -19,6 +22,14 @@ type Docker struct {
 	networkId      string
 	networkSubnet  string
 	networkGateway string
+}
+
+type ContainerEventData struct {
+	ID       string
+	Name     string
+	Image    string
+	Status   string
+	ExitCode string
 }
 
 func (d *Docker) Init(networkId, networkSubnet string, networkGateway string) error {
@@ -204,4 +215,53 @@ func (d *Docker) ContainerCreateAndStart(imageName, user, containerName, restart
 	}
 
 	return dockCont.ID, dockCont.Warnings, err
+}
+
+func (d *Docker) ContainerEvents(eve chan<- ContainerEventData) ContainerEventData {
+	ctx := context.Background()
+
+	// Create a filter for container create, die, and start events
+	filter := filters.NewArgs()
+	filter.Add("type", "container")
+	filter.Add("event", "create")
+	filter.Add("event", "die")
+	filter.Add("event", "start")
+
+	// Start listening to Docker events
+	eventChan, errChan := d.dockerClient.Events(ctx, types.EventsOptions{Filters: filter})
+
+	fmt.Println("Listening for container events...")
+
+	for {
+		select {
+		case event := <-eventChan:
+			switch event.Action {
+
+			case "create":
+				// fmt.Printf("Container %s created\n", event.Actor.ID)
+				eve <- handleContainerEvent(event)
+
+			case "die":
+				// fmt.Printf("Container %s died\n", event.Actor.ID)
+				eve <- handleContainerEvent(event)
+
+			case "start":
+				// fmt.Printf("Container %s started\n", event.Actor.ID)
+				eve <- handleContainerEvent(event)
+			}
+		case err := <-errChan:
+			// Handle errors
+			log.Println("Error while listening to events:", err)
+		}
+	}
+}
+
+func handleContainerEvent(event events.Message) ContainerEventData {
+	return ContainerEventData{
+		ID:       event.Actor.ID,
+		Name:     event.Actor.Attributes["name"],
+		Image:    event.Actor.Attributes["image"],
+		Status:   event.Status,
+		ExitCode: event.Actor.Attributes["exitCode"],
+	}
 }

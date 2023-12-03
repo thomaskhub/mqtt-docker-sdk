@@ -8,6 +8,18 @@ import (
 )
 
 const (
+	CONTAINER_START  = "start"
+	CONTAINER_CREATE = "create"
+	CONTAINER_DIE    = "die"
+)
+
+var EventMapping = map[string]string{
+	CONTAINER_START:  "docker_event_start",
+	CONTAINER_CREATE: "docker_event_create",
+	CONTAINER_DIE:    "docker_event_die",
+}
+
+const (
 	RPC_METHOD_START_DOCKER = "start_docker"
 	RPC_METHOD_ERROR_DOCKER = "error_docker"
 	RPC_METHOD_STOP_DOCKER  = "stop_docker"
@@ -66,6 +78,14 @@ type Rpc struct {
 	logger     utils.Logger
 	// dockerImgWhiteList []string
 	dockerClient *docker.Docker
+}
+
+type EventsDockerResult struct {
+	ContainerId string `json:"containerId"`
+	Name        string `json:"name"`
+	Image       string `json:"image"`
+	Status      string `json:"status"`
+	ExitCode    string `json:"exitCode,omitempty"`
 }
 
 // func (r *Rpc) Init(loggerMode string, dockerImgWhiteList []string, dockerClient *docker.Docker) {
